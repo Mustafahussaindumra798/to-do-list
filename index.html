@@ -3,161 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mustafa's Tasks | Premium To-Do Experience</title>
-    <meta name="description" content="A luxury, high-performance To-Do list application for high achievers. Built with precision and elegance.">
+    <title>Mustafa's Tasks | Premium Task Suite</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
 
-    <!-- External CSS -->
+    <!-- External Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body data-theme="dark">
+<body>
 
-    <div class="app-container">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="app-logo">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" />
-                        <path d="M8 12L11 15L16 9" />
-                    </svg>
-                    Mustafa's Tasks
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                 </div>
+                <h1 class="brand-title">Mustafa's Tasks</h1>
             </div>
-
-            <nav>
-                <ul class="nav-links">
-                    <li class="nav-item active" onclick="setFilter('all', this)">
-                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
-                        All Tasks
-                    </li>
-                    <li class="nav-item" onclick="setFilter('today', this)">
-                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                        Due Today
-                    </li>
-                    <li class="nav-item" onclick="setFilter('high', this)">
-                        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-                        High Priority
-                    </li>
-                    <li class="nav-item" onclick="setFilter('completed', this)">
-                        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
-                        Completed
-                    </li>
-                </ul>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="progress-container">
-                    <svg class="progress-ring" width="120" height="120">
-                        <circle class="progress-ring__background" cx="60" cy="60" r="52"></circle>
-                        <circle class="progress-ring__circle" id="progressRing" cx="60" cy="60" r="52" stroke-dasharray="326.72" stroke-dashoffset="326.72"></circle>
-                    </svg>
-                    <span class="progress-text" id="progressText">0%</span>
-                    <span class="progress-label">Efficiency</span>
-                </div>
-                <button class="btn-clear" onclick="clearCompleted()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6m4-6v6" /></svg>
-                    Clear Completed
-                </button>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="top-bar">
-                <button class="mobile-toggle" onclick="toggleSidebar()">
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-                </button>
-
-                <div class="search-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                    <input type="text" class="search-input" id="searchInput" placeholder="Search tasks by keyword..." oninput="handleSearch()">
-                </div>
-
-                <div class="top-actions">
-                    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
-                        <svg class="sun-icon" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
-                        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
-                    </button>
-                    <button class="btn-add-main" onclick="openModal()">
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="3" fill="none"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                        New Task
-                    </button>
-                </div>
-            </header>
-
-            <section class="stats-bar">
-                <div class="stat-card total">
-                    <span class="stat-label">Total Tasks</span>
-                    <span class="stat-value" id="statTotal">0</span>
-                </div>
-                <div class="stat-card completed">
-                    <span class="stat-label">Completed</span>
-                    <span class="stat-value" id="statCompleted">0</span>
-                </div>
-                <div class="stat-card remaining">
-                    <span class="stat-label">Remaining</span>
-                    <span class="stat-value" id="statRemaining">0</span>
-                </div>
-            </section>
-
-            <section class="tasks-container">
-                <div class="task-list" id="taskList" ondragover="handleDragOver(event)">
-                    <!-- Tasks will be injected here -->
-                </div>
-                <div id="emptyState" class="empty-state" style="display:none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="12" y1="18" x2="12" y2="12" />
-                        <line x1="9" y1="15" x2="15" y2="15" />
-                    </svg>
-                    <h3>No tasks found</h3>
-                    <p>It seems your schedule is clear. Ready to add something new?</p>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Add/Edit Task Modal -->
-    <div class="modal-overlay" id="taskModal">
-        <div class="modal-card">
-            <h2 class="modal-title" id="modalTitle">Create New Task</h2>
-            <form id="taskForm" onsubmit="saveTask(event)">
-                <input type="hidden" id="editTaskId">
-                <div class="form-group">
-                    <label class="form-label">Task Name</label>
-                    <input type="text" id="taskName" class="form-input" placeholder="e.g. Design Dashboard UI" required>
-                </div>
-                <div style="display:flex; gap:1rem;">
-                    <div class="form-group" style="flex:1;">
-                        <label class="form-label">Priority</label>
-                        <select id="taskPriority" class="form-select">
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="flex:1;">
-                        <label class="form-label">Due Date</label>
-                        <input type="date" id="taskDate" class="form-input">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn-save" id="saveBtn">Save Task</button>
-                </div>
-            </form>
+            <div class="divider"></div>
         </div>
-    </div>
 
-    <div class="toast" id="toast">Task saved successfully!</div>
+        <p class="nav-label">Views</p>
+        <nav>
+            <div class="nav-item active" onclick="setFilter('all', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                All Tasks
+            </div>
+            <div class="nav-item" onclick="setFilter('today', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Due Today
+            </div>
+            <div class="nav-item" onclick="setFilter('high', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                High Priority
+            </div>
+            <div class="nav-item" onclick="setFilter('completed', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Completed
+            </div>
+        </nav>
 
-    <!-- External JS -->
+        <div class="sidebar-footer">
+            <div class="progress-ring-container">
+                <svg width="110" height="110">
+                    <circle cx="55" cy="55" r="48" stroke="rgba(229,199,107,0.05)" stroke-width="8" fill="transparent"/>
+                    <circle id="progressCircle" class="progress-ring-circle" cx="55" cy="55" r="48" stroke="var(--primary-gold)" stroke-width="8" fill="transparent" stroke-dasharray="301.6" stroke-dashoffset="301.6" stroke-linecap="round"/>
+                </svg>
+                <div class="progress-text" id="progressText">0%</div>
+            </div>
+            <p style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Success Rate</p>
+            <button class="btn-clear" onclick="clearCompleted()">Clear Completed</button>
+        </div>
+    </aside>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <header class="top-bar">
+            <div class="mobile-menu" onclick="toggleSidebar()">
+                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </div>
+            <div class="search-container">
+                <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search across objectives..." oninput="handleSearch()">
+            </div>
+            <div class="theme-toggle" onclick="toggleTheme()">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </div>
+        </header>
+
+        <section class="stats-bar">
+            <div class="stat-card">
+                <span class="stat-label">Total Scope</span>
+                <span class="stat-value val-total" id="statTotal">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">In Progress</span>
+                <span class="stat-value val-remaining" id="statRemaining">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Achieved</span>
+                <span class="stat-value val-completed" id="statCompleted">0</span>
+            </div>
+        </section>
+
+        <div class="add-task-card">
+            <input type="text" class="task-input" id="taskName" placeholder="Define new objective...">
+            <select class="select-custom" id="taskPriority">
+                <option value="low">Low Priority</option>
+                <option value="medium" selected>Medium Priority</option>
+                <option value="high">High Priority</option>
+            </select>
+            <input type="date" class="date-custom" id="taskDate">
+            <button class="btn-add" onclick="addTask()">Add Objective</button>
+        </div>
+
+        <div class="filter-tabs">
+            <div class="filter-tab active" onclick="setFilter('all', this)">All</div>
+            <div class="filter-tab" onclick="setFilter('active', this)">Active</div>
+            <div class="filter-tab" onclick="setFilter('completed', this)">Completed</div>
+            <div class="filter-tab" onclick="setFilter('high', this)">High Priority</div>
+        </div>
+
+        <div class="task-list" id="taskList" ondragover="handleDragOver(event)">
+            <!-- Tasks injected here -->
+        </div>
+    </main>
+
+    <!-- External Script -->
     <script src="script.js"></script>
 </body>
 </html>
