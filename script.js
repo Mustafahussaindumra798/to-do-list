@@ -1,7 +1,8 @@
 // State Management
-let tasks = JSON.parse(localStorage.getItem('mustafa_ultimate_tasks')) || [];
+let tasks = JSON.parse(localStorage.getItem('mustafa_tasks_v2')) || [];
 let currentFilter = 'all';
 let searchQuery = '';
+let sortBy = 'order'; // Default sort
 
 // Initialize App
 function init() {
@@ -9,15 +10,22 @@ function init() {
     updateStats();
     checkTheme();
     setDefaultDate();
+    setupEventListeners();
+}
+
+function setupEventListeners() {
+    const taskInput = document.getElementById('taskName');
+    if (taskInput) {
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+    }
 }
 
 function setDefaultDate() {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const today = new Date().toISOString().split('T')[0];
     const dateInput = document.getElementById('taskDate');
-    if (dateInput) {
-        dateInput.value = tomorrow.toISOString().split('T')[0];
-    }
+    if (dateInput) dateInput.value = today;
 }
 
 // Theme Logic
@@ -26,47 +34,36 @@ function toggleTheme() {
     const currentTheme = body.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     body.setAttribute('data-theme', newTheme);
-    localStorage.setItem('mustafa_ultimate_theme', newTheme);
+    localStorage.setItem('mustafa_theme', newTheme);
 }
 
 function checkTheme() {
-    const savedTheme = localStorage.getItem('mustafa_ultimate_theme') || 'dark';
+    const savedTheme = localStorage.getItem('mustafa_theme') || 'dark';
     document.body.setAttribute('data-theme', savedTheme);
-}
-
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) {
-        sidebar.classList.toggle('open');
-    }
 }
 
 // CRUD Operations
 function addTask() {
-    const nameInput = document.getElementById('taskName');
-    const priorityInput = document.getElementById('taskPriority');
-    const dateInput = document.getElementById('taskDate');
+    const nameEl = document.getElementById('taskName');
+    const priorityEl = document.getElementById('taskPriority');
+    const dateEl = document.getElementById('taskDate');
 
-    if (!nameInput || !priorityInput || !dateInput) return;
-
-    const name = nameInput.value.trim();
-    const priority = priorityInput.value;
-    const date = dateInput.value;
-
+    const name = nameEl.value.trim();
     if (!name) return;
 
     const newTask = {
         id: Date.now(),
         title: name,
-        priority: priority,
-        dueDate: date,
+        priority: priorityEl.value,
+        dueDate: dateEl.value,
         completed: false,
+        createdAt: new Date().toISOString(),
         order: tasks.length
     };
 
     tasks.unshift(newTask);
     saveToStorage();
-    nameInput.value = '';
+    nameEl.value = '';
     renderTasks();
     updateStats();
 }
@@ -78,36 +75,42 @@ function toggleTask(id) {
     updateStats();
 }
 
-function deleteTask(id, el) {
-    const card = el.closest('.task-card');
-    if (card) {
-        card.classList.add('delete-anim');
-        setTimeout(() => {
-            tasks = tasks.filter(t => t.id !== id);
-            saveToStorage();
-            renderTasks();
-            updateStats();
-        }, 300);
-    }
+function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    saveToStorage();
+    renderTasks();
+    updateStats();
 }
 
-function clearCompleted() {
-    if (confirm('Archive all completed objectives?')) {
-        tasks = tasks.filter(t => !t.completed);
+function clearAllTasks() {
+    if (confirm('Are you sure you want to delete ALL tasks? This cannot be undone.')) {
+        tasks = [];
         saveToStorage();
         renderTasks();
         updateStats();
     }
 }
 
-// Filtering & Search
-function setFilter(filter, el) {
+function editTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
+    const newTitle = prompt('Edit Task Title:', task.title);
+    if (newTitle !== null && newTitle.trim() !== "") {
+        task.title = newTitle.trim();
+        saveToStorage();
+        renderTasks();
+    }
+}
+
+// Filtering & Sorting
+function setFilter(filter) {
     currentFilter = filter;
     
-    // Update active states in UI
+    // Update active states
     document.querySelectorAll('.nav-item, .filter-tab').forEach(item => {
-        const text = item.textContent.toLowerCase();
-        if (text.includes(filter.toLowerCase()) || (filter === 'all' && text.includes('all'))) {
+        const text = item.innerText.toLowerCase();
+        if (text.includes(filter) || (filter === 'all' && text === 'all')) {
             item.classList.add('active');
         } else {
             item.classList.remove('active');
@@ -117,12 +120,14 @@ function setFilter(filter, el) {
     renderTasks();
 }
 
+function setSort(type) {
+    sortBy = type;
+    renderTasks();
+}
+
 function handleSearch() {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchQuery = searchInput.value.toLowerCase();
-        renderTasks();
-    }
+    searchQuery = document.getElementById('searchInput').value.toLowerCase();
+    renderTasks();
 }
 
 function renderTasks() {
@@ -131,7 +136,12 @@ function renderTasks() {
 
     let filtered = [...tasks];
 
-    // Apply Filters
+    // Search
+    if (searchQuery) {
+        filtered = filtered.filter(t => t.title.toLowerCase().includes(searchQuery));
+    }
+
+    // Filter
     if (currentFilter === 'today') {
         const today = new Date().toISOString().split('T')[0];
         filtered = filtered.filter(t => t.dueDate === today);
@@ -143,92 +153,72 @@ function renderTasks() {
         filtered = filtered.filter(t => !t.completed);
     }
 
-    // Apply Search
-    if (searchQuery) {
-        filtered = filtered.filter(t => t.title.toLowerCase().includes(searchQuery));
+    // Sort
+    if (sortBy === 'priority') {
+        const pMap = { high: 1, medium: 2, low: 3 };
+        filtered.sort((a, b) => pMap[a.priority] - pMap[b.priority]);
+    } else if (sortBy === 'date') {
+        filtered.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    } else {
+        filtered.sort((a, b) => a.order - b.order);
     }
 
-    filtered.sort((a, b) => a.order - b.order);
-
-    container.innerHTML = '';
-    filtered.forEach((task, index) => {
-        const card = createTaskCard(task, index);
+    container.innerHTML = filtered.length ? '' : `<div style="text-align:center; padding:3rem; color:var(--text-muted);">No tasks found.</div>`;
+    
+    filtered.forEach(task => {
+        const card = createTaskCard(task);
         container.appendChild(card);
     });
 }
 
-function createTaskCard(task, index) {
+function createTaskCard(task) {
     const div = document.createElement('div');
     div.className = `task-card ${task.priority} ${task.completed ? 'completed' : ''}`;
-    div.style.setProperty('--index', index);
-    div.setAttribute('draggable', 'true');
-    div.setAttribute('data-id', task.id);
     
-    div.addEventListener('dragstart', handleDragStart);
-    div.addEventListener('dragend', handleDragEnd);
-
     const isOverdue = !task.completed && new Date(task.dueDate) < new Date().setHours(0,0,0,0);
-    const isToday = task.dueDate === new Date().toISOString().split('T')[0];
-    const dateClass = isOverdue ? 'date-overdue' : (isToday ? 'date-today' : '');
+    const dateColor = isOverdue ? 'var(--danger-coral)' : 'var(--text-muted)';
 
     div.innerHTML = `
-        <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
-        <div class="task-body">
-            <span class="task-title">${task.title}</span>
+        <div class="checkbox-wrapper ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+        <div class="task-content">
+            <div class="task-title">${task.title}</div>
             <div class="task-meta">
-                <span class="priority-badge badge-${task.priority}">${task.priority}</span>
-                <div class="date-chip ${dateClass}">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span class="badge badge-${task.priority}">${task.priority}</span>
+                <span class="date-text" style="color: ${dateColor}">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v10m-5-5h10M3 10a2 2 0 1 0 4 0 2 2 0 1 0-4 0"/></svg>
                     ${formatDate(task.dueDate)}
-                </div>
+                </span>
             </div>
         </div>
         <div class="task-actions">
-            <svg class="action-icon action-delete" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" onclick="deleteTask(${task.id}, this)"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <div class="action-btn" onclick="editTask(${task.id})">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+            <div class="action-btn delete" onclick="deleteTask(${task.id})">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </div>
         </div>
     `;
     return div;
 }
 
-// Stats & UI Polish
+// Stats & UI Update
 function updateStats() {
     const total = tasks.length;
     const completed = tasks.filter(t => t.completed).length;
-    const remaining = total - completed;
-
-    animateNumber('statTotal', total);
-    animateNumber('statRemaining', remaining);
-    animateNumber('statCompleted', completed);
-
-    // Progress Ring
     const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-    const circle = document.getElementById('progressCircle');
-    if (circle) {
-        const offset = 282.7 - (282.7 * percent / 100);
-        circle.style.strokeDashoffset = offset;
-    }
-    const progressText = document.getElementById('progressText');
-    if (progressText) {
-        progressText.textContent = percent + '%';
-    }
-}
 
-function animateNumber(id, endValue) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const startValue = parseInt(el.textContent) || 0;
-    if (startValue === endValue) return;
-    
-    const duration = 800;
-    let startTimestamp = null;
+    const totalEl = document.getElementById('statTotal');
+    const remainingEl = document.getElementById('statRemaining');
+    const completedEl = document.getElementById('statCompleted');
+    const barEl = document.getElementById('progressBar');
+    const percentEl = document.getElementById('progressPercent');
 
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        el.textContent = Math.floor(progress * (endValue - startValue) + startValue);
-        if (progress < 1) window.requestAnimationFrame(step);
-    };
-    window.requestAnimationFrame(step);
+    if (totalEl) totalEl.innerText = total;
+    if (remainingEl) remainingEl.innerText = total - completed;
+    if (completedEl) completedEl.innerText = completed;
+    if (barEl) barEl.style.width = percent + '%';
+    if (percentEl) percentEl.innerText = percent + '%';
 }
 
 function formatDate(dateStr) {
@@ -237,53 +227,12 @@ function formatDate(dateStr) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-// Drag & Drop
-let draggedItem = null;
-function handleDragStart(e) {
-    draggedItem = this;
-    setTimeout(() => this.style.opacity = '0.5', 0);
-}
-
-function handleDragEnd() {
-    this.style.opacity = '1';
-    const rows = Array.from(document.querySelectorAll('.task-card'));
-    tasks = rows.map((row, index) => {
-        const task = tasks.find(t => t.id == row.getAttribute('data-id'));
-        return { ...task, order: index };
-    });
-    saveToStorage();
-}
-
-function handleDragOver(e) {
-    e.preventDefault();
-    const container = document.getElementById('taskList');
-    if (!container) return;
-
-    const afterElement = Array.from(container.querySelectorAll('.task-card:not(.dragging)')).reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = e.clientY - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) return { offset, element: child };
-        return closest;
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-
-    if (draggedItem) {
-        if (afterElement) container.insertBefore(draggedItem, afterElement);
-        else container.appendChild(draggedItem);
-    }
-}
-
 function saveToStorage() {
-    localStorage.setItem('mustafa_ultimate_tasks', JSON.stringify(tasks));
+    localStorage.setItem('mustafa_tasks_v2', JSON.stringify(tasks));
 }
 
-// Event Listeners for Enter key
-document.addEventListener('DOMContentLoaded', () => {
-    init();
-    
-    const taskNameInput = document.getElementById('taskName');
-    if (taskNameInput) {
-        taskNameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addTask();
-        });
-    }
-});
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+}
+
+document.addEventListener('DOMContentLoaded', init);
