@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-red: #FF3B30;
+  --color-brand-amber: #F2C230;
+
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-color: var(--border-color);
+
+  --font-heading: 'Bebas Neue', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+@layer base {
+  :root {
+    /* Light Mode */
+    --bg-primary: #FAFAFA;
+    --bg-secondary: #FFFFFF;
+    --text-primary: #141414;
+    --text-secondary: #4b5563; /* Gray 600 */
+    --border-color: #E5E5E5;
+  }
+
+  .dark {
+    /* Dark Mode (Default) */
+    --bg-primary: #0A0A0A;
+    --bg-secondary: #141414;
+    --text-primary: #FFFFFF;
+    --text-secondary: #E8E8E8;
+    --border-color: #262626; /* Gray 800 */
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg-primary text-text-primary font-body antialiased transition-colors duration-300;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading uppercase tracking-tight;
+  }
+}
